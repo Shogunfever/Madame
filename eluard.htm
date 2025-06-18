@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Captcha Puzzle Paul Éluard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    background-color: #111;
+    color: #fff;
+    text-align: center;
+  }
+  h1 {
+    margin-top: 10px;
+    font-size: 20px;
+  }
+  #timer {
+    font-size: 18px;
+    margin: 5px;
+  }
+  #puzzle {
+    width: 300px;
+    height: 300px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 2px;
+  }
+  .piece {
+    width: 100%;
+    height: 100%;
+    background-image: url('https://resize-parismatch.lanmedia.fr/img/var/news/storage/images/paris-match/people-a-z/paul-eluard/6147116-9-fre-FR/Paul-Eluard.jpg');
+    background-size: 300px 300px;
+    cursor: pointer;
+    transition: outline 0.2s, transform 0.2s;
+  }
+  .selected {
+    outline: 2px solid yellow;
+    transform: scale(1.05);
+  }
+  #continue-link {
+    display: none;
+    margin-top: 20px;
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Remettez Paul Éluard dans l'ordre !</h1>
+<div id="timer">Temps restant : 20s</div>
+<div id="puzzle"></div>
+<a href="TestEluard.html" id="continue-link">Continuer vers le prochain test</a>
+
+<script>
+const puzzle = document.getElementById('puzzle');
+const timerDisplay = document.getElementById('timer');
+const continueLink = document.getElementById('continue-link');
+const size = 3;
+let timeLeft = 20;
+let timerInterval, chaosInterval;
+let failureCount = 0;
+let firstClicked = null;
+
+const messages = [
+  "Je désespère de l'Homme en vous...",
+  "Madame, s'il vous plait... Il s'agit de Paul Éluard!",
+  `Voici pour vous motiver l'un de ses plus beaux poèmes:\n\n` +
+  `Neuf cent mille prisonniers\nCinq cent mille politiques\nUn million de travailleurs\n\n` +
+  `Maîtresse de leur sommeil\nDonne-leur des forces d’homme\nLe bonheur d’être sur terre\nDonne-leur dans l’ombre immense\nLes lèvres d’un amour doux\nComme l’oubli des souffrances\n\n` +
+  `Maîtresse de leur sommeil\nFille femme soeur et mère\nAux seins gonflés de baisers\nDonne-leur notre pays\nTel qu’ils l’ont toujours chéri\nUn pays fou de la vie\n\n` +
+  `Un pays où le vin chante\nOù les moissons ont bon coeur\nOù les enfants sont malins\nOù les vieillards sont plus fins\nQu’arbres à fruits blancs de fleurs\nOù l’on peut parler aux femmes\n\n` +
+  `Neuf cent mille prisonniers\nCinq cent mille politiques\nUn million de travailleurs\n\n` +
+  `Maîtresse de leur sommeil\nNeige noire des nuits blanches\nÀ travers un feu exsangue\nSainte Aube à la canne blanche\nFais-leur voir un chemin neuf\nHors de leur prison de planches\n\n` +
+  `Ils sont payés pour connaître\nLes pires forces du mal\nPourtant ils ont tenu bon\nIls sont criblés de vertus\nTout autant que de blessures\nCar il faut qu’ils se survivent\n\n` +
+  `Maîtresse de leur repos\nMaîtresse de leur éveil\nDonne-leur la liberté\nMais garde-nous notre honte\nD’avoir pu croire à la honte\nMême pour l’anéantir`
+];
+
+function createPuzzle() {
+  puzzle.innerHTML = '';
+  const pieces = [];
+  for (let i = 0; i < size * size; i++) {
+    const div = document.createElement('div');
+    div.classList.add('piece');
+    const row = Math.floor(i / size);
+    const col = i % size;
+    div.style.backgroundPosition = `-${col * 100}px -${row * 100}px`;
+    div.dataset.correctIndex = i;
+    pieces.push(div);
+  }
+  pieces.sort(() => Math.random() - 0.5);
+  pieces.forEach(piece => puzzle.appendChild(piece));
+}
+
+puzzle.addEventListener('click', (e) => {
+  const target = e.target;
+  if (!target.classList.contains('piece')) return;
+
+  if (!firstClicked) {
+    firstClicked = target;
+    target.classList.add('selected');
+  } else {
+    swapPieces(firstClicked, target);
+    firstClicked.classList.remove('selected');
+    firstClicked = null;
+
+    if (checkWin()) {
+      clearInterval(timerInterval);
+      clearInterval(chaosInterval);
+      alert("Incroyable ! Tu es un vrai poète !");
+      failureCount = 0;
+      continueLink.style.display = 'block'; // Affiche le lien de continuation
+      createPuzzle();
+      startTimer();
+    }
+  }
+});
+
+function swapPieces(p1, p2) {
+  const temp = p1.style.backgroundPosition;
+  p1.style.backgroundPosition = p2.style.backgroundPosition;
+  p2.style.backgroundPosition = temp;
+
+  const tempIndex = p1.dataset.correctIndex;
+  p1.dataset.correctIndex = p2.dataset.correctIndex;
+  p2.dataset.correctIndex = tempIndex;
+}
+
+function checkWin() {
+  const elements = puzzle.children;
+  for (let i = 0; i < elements.length; i++) {
+    if (Number(elements[i].dataset.correctIndex) !== i) return false;
+  }
+  return true;
+}
+
+function startTimer() {
+  timeLeft = 8;
+  timerDisplay.textContent = `Temps restant : ${timeLeft}s`;
+  clearInterval(chaosInterval);
+  clearInterval(timerInterval);
+
+  // CHAOS : une seule pièce se déplace toutes les 3 secondes
+  chaosInterval = setInterval(() => {
+    const children = [...puzzle.children];
+    const randomPiece = children[Math.floor(Math.random() * children.length)];
+    const randomPos = Math.floor(Math.random() * children.length);
+    puzzle.insertBefore(randomPiece, children[randomPos]);
+  }, 3000);
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = `Temps restant : ${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      clearInterval(chaosInterval);
+      failureCount++;
+      const message = messages[Math.min(failureCount - 1, messages.length - 1)];
+      alert(message);
+      createPuzzle();
+      startTimer();
+    }
+  }, 1000);
+}
+
+createPuzzle();
+startTimer();
+</script>
+
+</body>
+</html>
