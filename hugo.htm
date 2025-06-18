@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title> Attrape Victor Hugo ! </title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: linear-gradient(135deg, #2c3e50, #4ca1af);
+    font-family: 'Arial', sans-serif;
+    color: #fff;
+  }
+  h1 {
+    text-align: center;
+    margin-top: 20px;
+  }
+  #game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+  .character {
+    position: absolute;
+    width: 100px;
+    height: auto;
+    cursor: pointer;
+    transition: top 0.2s linear, left 0.2s linear;
+  }
+  #score {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 20px;
+    z-index: 10;
+  }
+  #nextTestLink {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    padding: 15px 30px;
+    background-color: #28a745;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    z-index: 100;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<h1>Attrape Victor Hugo ! </h1>
+<div id="game">
+  <div id="score">Cliquez sur Victor : 0 / 3</div>
+  <a href="#" id="nextTestLink">Prochain test</a>
+</div>
+
+<script>
+const game = document.getElementById('game');
+const scoreDisplay = document.getElementById('score');
+const nextTestLink = document.getElementById('nextTestLink');
+
+let score = 0;
+const characters = [];
+let gameInterval;
+
+// URL de l'image de Victor Hugo
+const victorURL = "https://www.nofi.media/wp-content/uploads/2018/05/838_hugo-768x1082.jpg";
+
+// URL des images des imposteurs
+const impostorImages = [
+  "https://s3.amazonaws.com/s3.timetoast.com/public/uploads/photos/7869461/Zola.jpg", // Zola
+  "https://www.sartle.com/media/artist/henri-de-toulouse-lautrec.jpg", // Toulouse-Lautrec
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Karl_Marx_001.jpg/1200px-Karl_Marx_001.jpg" // Karl Marx
+];
+
+// Crée le vrai Victor Hugo
+const victor = document.createElement('img');
+victor.src = victorURL;
+victor.classList.add('character');
+victor.alt = "Victor Hugo";
+game.appendChild(victor);
+characters.push(victor);
+
+// Le gestionnaire de clic pour Victor Hugo
+victor.addEventListener('click', () => {
+  if (score < 3) {
+    score++;
+    scoreDisplay.textContent = `Cliquez sur Victor : ${score} / 3`;
+
+    if (score >= 3) {
+      alert("Bravo ! Vous avez attrapé Victor Hugo 3 fois !");
+      clearInterval(gameInterval); // Arrête le déplacement des personnages
+      
+      // Cache tous les personnages
+      characters.forEach(char => {
+        char.style.display = 'none';
+      });
+
+      scoreDisplay.style.display = 'none'; // Cache l'affichage du score
+      nextTestLink.style.display = 'block'; // Affiche le lien "Prochain test"
+    }
+  }
+});
+
+// Crée les imposteurs et ajoute leurs gestionnaires de clic
+impostorImages.forEach(url => {
+  const impostor = document.createElement('img');
+  impostor.src = url;
+  impostor.classList.add('character');
+  impostor.alt = "Imposteur";
+  game.appendChild(impostor);
+  characters.push(impostor);
+
+  impostor.addEventListener('click', () => {
+    alert("Enfin, tu ne sais pas reconnaître un poète lorsque tu en vois un ?!");
+  });
+});
+
+// Fonction pour déplacer tous les personnages
+function moveCharacters() {
+  const gameWidth = window.innerWidth - 100;
+  const gameHeight = window.innerHeight - 150;
+
+  characters.forEach(char => {
+    const randomX = Math.random() * gameWidth;
+    const randomY = Math.random() * gameHeight;
+    
+    char.style.left = randomX + 'px';
+    char.style.top = randomY + 'px';
+  });
+}
+
+// Démarre le déplacement des personnages
+// Augmenté de 10% : 650ms * (1 - 0.10) = 585ms
+gameInterval = setInterval(moveCharacters, 585);
+
+// Adapter le déplacement lors du redimensionnement de la fenêtre
+window.addEventListener('resize', moveCharacters);
+</script>
+
+</body>
+</html>
