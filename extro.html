@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Message mystère</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Message mystère</title>
 <style>
   /* Styles Généraux pour Mobile-First */
   body {
@@ -52,27 +53,7 @@
     letter-spacing: 2px; /* Légèrement réduit pour mobile */
   }
 
-  /* Style du lien "Lancer les épreuves" */
-  #continue-link {
-    opacity: 0; /* Caché par défaut */
-    display: block; /* Prend sa propre ligne */
-    width: fit-content; /* Sa largeur s'adapte à son contenu */
-    margin-top: 30px; /* Espacement au-dessus */
-    padding: 12px 25px; /* Augmente la zone cliquable/touchable */
-    background-color: #333;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    transition: opacity 1s ease-in; /* Transition douce pour l'apparition */
-    text-align: center;
-    font-size: 1.1em;
-    cursor: pointer; /* Indique que c'est cliquable */
-    -webkit-tap-highlight-color: transparent; /* Supprime l'effet de surbrillance au toucher sur iOS */
-    z-index: 2; /* Assure que le lien est au-dessus de tout */
-  }
-  #continue-link.visible {
-    opacity: 1; /* Rendu visible */
-  }
+  /* Le style #continue-link a été supprimé car le lien n'est plus nécessaire */
 
   /* Curseur clignotant */
   .cursor {
@@ -128,10 +109,7 @@
       min-height: 180px;
       padding: 15px;
     }
-    #continue-link {
-      padding: 10px 20px;
-      font-size: 1em;
-    }
+    /* Le style #continue-link dans la media query a aussi été supprimé */
   }
 
   /* Media Queries pour les écrans très petits */
@@ -183,7 +161,7 @@ const textLines = [
 ];
 
 const typingElement = document.getElementById('typing-text');
-const continueLink = document.getElementById('continue-link');
+// La ligne `const continueLink = document.getElementById('continue-link');` a été supprimée
 const fireworksContainer = document.getElementById('fireworks-container');
 
 let currentLineIndex = 0;
@@ -242,11 +220,7 @@ function typeWriter() {
         cursorSpan.textContent = '|';
         typingElement.appendChild(cursorSpan); // Ajoute au DOM existant
         
-        // Afficher le lien "Lancer les épreuves"
-        // Le lien est maintenant un élément fixe, il n'est pas "append" au texte.
-        if (!continueLink.classList.contains('visible')) {
-            continueLink.classList.add('visible');
-        }
+        // La section qui gérait l'affichage du lien a été supprimée
         return; // Arrête la récursion
     }
 
