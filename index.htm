@@ -4,67 +4,96 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Dialogue interactif</title>
 <style>
+  /* Styles Généraux pour Mobile-First */
   body {
     font-family: 'Courier New', monospace;
     background-color: #f8f8f8;
     color: #333;
-    max-width: 90%; /* Prend 90% de la largeur de l'écran */
-    width: 600px; /* Largeur maximale pour les écrans plus grands */
-    margin: 0 auto; /* Centre le contenu */
-    padding: 20px 10px; /* Réduit le padding pour les mobiles */
+    margin: 0; /* Supprime les marges par défaut du body */
+    padding: 20px; /* Padding global pour espacer le contenu des bords de l'écran */
     line-height: 1.6;
-    font-size: 1.1em; /* Légèrement plus grand pour la lisibilité sur mobile */
-    box-sizing: border-box; /* S'assure que le padding est inclus dans la largeur */
+    font-size: 1.1em; /* Taille de base pour une meilleure lisibilité sur mobile */
+    box-sizing: border-box; /* S'assure que le padding est inclus dans la largeur/hauteur */
+    display: flex; /* Utilise flexbox pour un meilleur contrôle de la mise en page */
+    flex-direction: column; /* Empile les éléments verticalement */
+    align-items: center; /* Centre le contenu horizontalement */
+    min-height: 100vh; /* Prend au moins toute la hauteur de la vue */
   }
+
+  /* Conteneur principal du texte */
   #typing-text {
-    white-space: pre-wrap;
-    overflow: hidden;
-    border-right: 2px solid #333;
-    min-height: 200px; /* Hauteur minimale ajustée pour mobile */
-    padding-right: 5px; /* Pour éviter que le curseur ne colle au texte */
+    width: 100%; /* Prend toute la largeur disponible */
+    max-width: 600px; /* Limite la largeur sur les grands écrans (tablettes, desktop) */
+    min-height: 250px; /* Hauteur minimale pour l'espace de frappe */
+    height: auto; /* La hauteur s'adaptera au contenu */
+    background-color: #fff; /* Fond blanc pour le bloc de texte */
+    border: 1px solid #ccc; /* Bordure légère */
+    padding: 20px; /* Padding interne pour le texte */
     box-sizing: border-box;
-    word-wrap: break-word; /* Important pour les longs mots sur petits écrans */
+    overflow: hidden; /* Cache tout ce qui dépasse, mais le texte est géré par la JS */
+    white-space: pre-wrap; /* Maintient les sauts de ligne et espaces du JS */
+    word-wrap: break-word; /* Casse les mots longs pour éviter le débordement horizontal */
+    border-right: 2px solid #333; /* Effet curseur visuel */
   }
-  /* Les styles .paranoia et .paranoia.final ont été supprimés */
+
+  /* Style du lien "Lancer les épreuves" */
   #continue-link {
-    opacity: 0;
-    display: block; /* Passe en block pour prendre toute la largeur disponible sur mobile */
-    width: fit-content; /* S'adapte au contenu */
-    margin: 20px auto 0; /* Centre le bouton */
-    padding: 12px 25px; /* Augmente légèrement le padding pour faciliter le toucher */
+    opacity: 0; /* Caché par défaut */
+    display: block; /* Prend sa propre ligne */
+    width: fit-content; /* Sa largeur s'adapte à son contenu */
+    margin-top: 30px; /* Espacement au-dessus */
+    padding: 12px 25px; /* Augmente la zone cliquable/touchable */
     background-color: #333;
     color: white;
     text-decoration: none;
     border-radius: 4px;
-    transition: opacity 1s ease-in;
-    text-align: center; /* Centrage du texte si le bouton est plus large */
-    font-size: 1.1em; /* Taille de police du bouton */
+    transition: opacity 1s ease-in; /* Transition douce pour l'apparition */
+    text-align: center;
+    font-size: 1.1em;
+    cursor: pointer; /* Indique que c'est cliquable */
+    -webkit-tap-highlight-color: transparent; /* Supprime l'effet de surbrillance au toucher sur iOS */
   }
   #continue-link.visible {
-    opacity: 1;
+    opacity: 1; /* Rendu visible */
   }
+
+  /* Curseur clignotant */
   .cursor {
     animation: blink 1s step-end infinite;
+    display: inline-block; /* S'assure qu'il est sur la même ligne que le dernier caractère */
+    vertical-align: bottom; /* Aligne le curseur avec la ligne de base du texte */
   }
   @keyframes blink {
     from, to { opacity: 1; }
     50% { opacity: 0; }
   }
 
-  /* Media Queries pour des ajustements spécifiques aux écrans plus petits */
-  @media (max-width: 480px) {
+  /* Media Queries pour les petits écrans (smartphones portrait) */
+  @media (max-width: 500px) {
     body {
-      font-size: 1em; /* Taille de base légèrement plus petite pour les très petits écrans */
-      padding: 15px 10px;
+      padding: 15px; /* Moins de padding sur les bords */
+      font-size: 1em; /* Réduit légèrement la taille de base du texte */
     }
     #typing-text {
-      min-height: 150px; /* Encore plus petit sur les très petits écrans */
+      min-height: 180px; /* Adapte la hauteur minimale pour les plus petits écrans */
+      padding: 15px; /* Moins de padding interne */
     }
     #continue-link {
-      padding: 10px 20px;
-      font-size: 1em;
+      padding: 10px 20px; /* Réduit un peu le padding du bouton */
+      font-size: 1em; /* Réduit la taille du texte du bouton */
     }
   }
+
+  /* Media Queries pour les écrans très petits */
+  @media (max-width: 350px) {
+    body {
+      font-size: 0.9em;
+    }
+    #typing-text {
+      min-height: 150px;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -89,16 +118,22 @@ const typingElement = document.getElementById('typing-text');
 const continueLink = document.getElementById('continue-link');
 let lineIndex = 0;
 let charIndex = 0;
+let cursorElement = null; // Pour gérer le curseur séparément
 
 function typeWriter() {
+  // Supprimer l'ancien curseur s'il existe avant d'ajouter le prochain caractère
+  if (cursorElement && cursorElement.parentNode) {
+    cursorElement.parentNode.removeChild(cursorElement);
+  }
+
   if (lineIndex < textLines.length) {
     const currentLine = textLines[lineIndex];
     
     if (charIndex < currentLine.text.length) {
       let charToAdd = currentLine.text[charIndex];
       
-      // Ajouter le caractère directement au typingElement
-      // Gérer les sauts de ligne ou ajouter un nœud texte pour les autres caractères
+      // La manière la plus sûre d'ajouter du texte sans interférer avec d'autres éléments HTML
+      // ou causer des re-renderings qui écrasent le DOM
       if (charToAdd === '\n') {
           typingElement.appendChild(document.createElement('br'));
       } else {
@@ -106,7 +141,8 @@ function typeWriter() {
       }
       
       charIndex++;
-      setTimeout(typeWriter, Math.random() * 50 + 30); // Vitesse de frappe variable
+      // Vitesse de frappe variable, légèrement ajustée si nécessaire pour mobile
+      setTimeout(typeWriter, Math.random() * 50 + 30);
     } else {
       // Fin de la ligne - pause avant la suivante
       charIndex = 0;
@@ -114,14 +150,21 @@ function typeWriter() {
       setTimeout(typeWriter, currentLine.delayAfter);
     }
   } else {
-    // Fin du texte - affiche le curseur clignotant
-    const cursorSpan = document.createElement('span');
-    cursorSpan.classList.add('cursor');
-    cursorSpan.textContent = '|';
-    typingElement.appendChild(cursorSpan);
+    // Fin du texte : Afficher le curseur final et le lien
+    cursorElement = document.createElement('span');
+    cursorElement.classList.add('cursor');
+    cursorElement.textContent = '|';
+    typingElement.appendChild(cursorElement);
 
-    // Affiche le lien
     continueLink.classList.add('visible');
+  }
+
+  // Si le curseur n'est pas le curseur final et qu'il n'est pas encore ajouté, l'ajouter après chaque caractère
+  if (!cursorElement && lineIndex < textLines.length) {
+      cursorElement = document.createElement('span');
+      cursorElement.classList.add('cursor');
+      cursorElement.textContent = '|';
+      typingElement.appendChild(cursorElement);
   }
 }
 
