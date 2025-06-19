@@ -3,7 +3,8 @@
 <head>
 <h1>Test d'Humanité n°2</h1>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Attrapez Victor Hugo en cliquant sur la bonne image</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+<title>Attrapez Victor Hugo en cliquant sur la bonne image</title>
 <style>
   body {
     margin: 0;
@@ -94,7 +95,7 @@
 <h1>Attrape Victor Hugo ! </h1>
 <div id="score">Cliquez sur Victor : 0 / 3</div>
 <div id="game">
-  </div>
+</div>
 
 <a href="https://shogunfever.github.io/Madame/eluard" id="nextTestLink">Prochain test</a>
 
@@ -193,8 +194,8 @@ function moveCharacters() {
   });
 }
 
-// Démarre le déplacement des personnages
-gameInterval = setInterval(moveCharacters, 700); 
+// Démarre le déplacement des personnages (intervalle de 560ms pour augmenter le mouvement de 20%)
+gameInterval = setInterval(moveCharacters, 560); 
 
 // Adapter le déplacement lors du redimensionnement de la fenêtre
 window.addEventListener('resize', moveCharacters);
