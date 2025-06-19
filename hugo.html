@@ -16,6 +16,7 @@
     align-items: center;
     justify-content: flex-start; /* Alignement en haut pour laisser de la place */
     min-height: 100vh; /* S'assure que le body prend au moins toute la hauteur de la vue */
+    touch-action: pan-y; /* Permet le défilement vertical du body si nécessaire, mais pas les taps sur les images */
   }
   h1 {
     text-align: center;
@@ -39,6 +40,8 @@
     transition: top 0.3s ease-out, left 0.3s ease-out; /* Transition plus fluide */
     border-radius: 5px; /* Légers bords arrondis */
     box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Ombre pour les faire ressortir */
+    touch-action: none; /* TRÈS IMPORTANT: Empêche le défilement/zoom par défaut sur cet élément */
+    -webkit-tap-highlight-color: transparent; /* Pour retirer l'effet de surbrillance au toucher sur iOS */
   }
   #score {
     position: relative; /* Rendu relatif pour être dans le flux du document */
@@ -123,30 +126,31 @@ game.appendChild(victor);
 characters.push(victor);
 
 // Le gestionnaire de clic/touch pour Victor Hugo
-const handleVictorClick = () => {
-  if (gameOver) return; // Ne rien faire si le jeu est terminé
+const handleVictorInteraction = (e) => {
+  e.preventDefault(); // Empêche le comportement par défaut (défilement/zoom)
+  if (gameOver) return; 
 
   if (score < 3) {
     score++;
     scoreDisplay.textContent = `Cliquez sur Victor : ${score} / 3`;
 
     if (score >= 3) {
-      gameOver = true; // Le jeu est terminé
+      gameOver = true; 
       alert("Bravo ! Vous avez attrapé Victor Hugo 3 fois !");
-      clearInterval(gameInterval); // Arrête le déplacement des personnages
+      clearInterval(gameInterval); 
       
-      // Cache tous les personnages
       characters.forEach(char => {
         char.style.display = 'none';
       });
 
-      scoreDisplay.style.display = 'none'; // Cache l'affichage du score
-      nextTestLink.style.display = 'block'; // Affiche le lien "Prochain test"
+      scoreDisplay.style.display = 'none'; 
+      nextTestLink.style.display = 'block'; 
     }
   }
 };
-victor.addEventListener('click', handleVictorClick);
-victor.addEventListener('touchend', handleVictorClick); // Gère aussi les touch events
+// Utilisation de touchstart pour une meilleure réactivité sur mobile, avec preventDefault
+victor.addEventListener('mousedown', handleVictorInteraction);
+victor.addEventListener('touchstart', handleVictorInteraction);
 
 // Crée les imposteurs et ajoute leurs gestionnaires de clic/touch
 impostorImages.forEach(url => {
@@ -157,27 +161,29 @@ impostorImages.forEach(url => {
   game.appendChild(impostor);
   characters.push(impostor);
 
-  const handleImpostorClick = () => {
-    if (gameOver) return; // Ne rien faire si le jeu est terminé
+  const handleImpostorInteraction = (e) => {
+    e.preventDefault(); // Empêche le comportement par défaut
+    if (gameOver) return; 
     alert("Enfin, tu ne sais pas reconnaître un poète lorsque tu en vois un ?!");
   };
-  impostor.addEventListener('click', handleImpostorClick);
-  impostor.addEventListener('touchend', handleImpostorClick); // Gère aussi les touch events
+  // Utilisation de touchstart pour une meilleure réactivité sur mobile, avec preventDefault
+  impostor.addEventListener('mousedown', handleImpostorInteraction);
+  impostor.addEventListener('touchstart', handleImpostorInteraction);
 });
 
 // Fonction pour déplacer tous les personnages
 function moveCharacters() {
-  if (gameOver) return; // Ne pas déplacer si le jeu est terminé
+  if (gameOver) return; 
 
-  const gameRect = game.getBoundingClientRect(); // Obtenir les dimensions du conteneur de jeu
+  const gameRect = game.getBoundingClientRect(); 
   const gameWidth = gameRect.width;
   const gameHeight = gameRect.height;
 
   characters.forEach(char => {
-    // S'assurer que les personnages restent dans les limites du conteneur du jeu
     const charWidth = char.offsetWidth;
     const charHeight = char.offsetHeight;
 
+    // Assure que les personnages restent dans la zone visible du conteneur de jeu
     const randomX = Math.random() * (gameWidth - charWidth);
     const randomY = Math.random() * (gameHeight - charHeight);
     
@@ -187,8 +193,7 @@ function moveCharacters() {
 }
 
 // Démarre le déplacement des personnages
-// Intervalle légèrement réduit pour une difficulté modérée sur mobile
-gameInterval = setInterval(moveCharacters, 700); // Passé de 585ms à 700ms pour une meilleure jouabilité sur mobile
+gameInterval = setInterval(moveCharacters, 700); 
 
 // Adapter le déplacement lors du redimensionnement de la fenêtre
 window.addEventListener('resize', moveCharacters);
