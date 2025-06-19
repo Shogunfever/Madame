@@ -2,26 +2,43 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Message mystère</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Message mystère</title>
 <style>
+  /* Styles Généraux pour Mobile-First */
   body {
     font-family: 'Courier New', monospace;
     background-color: #f8f8f8;
     color: #333;
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 40px 20px;
+    margin: 0; /* Supprime les marges par défaut du body */
+    padding: 20px; /* Padding global pour espacer le contenu des bords de l'écran */
     line-height: 1.6;
-    position: relative;
+    font-size: 1.1em; /* Taille de base pour une meilleure lisibilité sur mobile */
+    box-sizing: border-box; /* S'assure que le padding est inclus dans la largeur/hauteur */
+    display: flex; /* Utilise flexbox pour un meilleur contrôle de la mise en page */
+    flex-direction: column; /* Empile les éléments verticalement */
+    align-items: center; /* Centre le contenu horizontalement */
+    min-height: 100vh; /* Prend au moins toute la hauteur de la vue */
+    position: relative; /* Pour positionner les feux d'artifice par rapport au body */
   }
+
+  /* Conteneur principal du texte */
   #typing-text {
-    white-space: pre-wrap;
-    overflow: hidden;
-    border-right: 2px solid #333;
-    min-height: 300px;
-    position: relative;
-    z-index: 1;
+    width: 100%; /* Prend toute la largeur disponible */
+    max-width: 600px; /* Limite la largeur sur les grands écrans (tablettes, desktop) */
+    min-height: 250px; /* Hauteur minimale pour l'espace de frappe */
+    height: auto; /* La hauteur s'adaptera au contenu */
+    background-color: #fff; /* Fond blanc pour le bloc de texte */
+    border: 1px solid #ccc; /* Bordure légère */
+    padding: 20px; /* Padding interne pour le texte */
+    box-sizing: border-box;
+    overflow: hidden; /* Cache tout ce qui dépasse */
+    white-space: pre-wrap; /* Maintient les sauts de ligne et espaces du JS */
+    word-wrap: break-word; /* Casse les mots longs pour éviter le débordement horizontal */
+    position: relative; /* Important pour le z-index si le conteneur du texte doit être au-dessus des feux */
+    z-index: 1; /* Assure que le texte est au-dessus des feux d'artifice */
   }
+
+  /* Styles pour le mot "secret" (non utilisé dans votre code actuel, mais maintenu au cas où) */
   .secret {
     display: inline-block;
     font-weight: normal;
@@ -29,44 +46,56 @@
     transition: all 2s ease-out;
   }
   .secret.final {
-    font-size: 1.5em;
+    font-size: 1.3em; /* Ajusté pour mobile */
     color: #0000ff;
     font-weight: bold;
-    letter-spacing: 3px;
+    letter-spacing: 2px; /* Légèrement réduit pour mobile */
   }
+
+  /* Style du lien "Lancer les épreuves" */
   #continue-link {
-    opacity: 0;
-    display: inline-block;
-    margin-top: 20px;
-    padding: 10px 20px;
+    opacity: 0; /* Caché par défaut */
+    display: block; /* Prend sa propre ligne */
+    width: fit-content; /* Sa largeur s'adapte à son contenu */
+    margin-top: 30px; /* Espacement au-dessus */
+    padding: 12px 25px; /* Augmente la zone cliquable/touchable */
     background-color: #333;
     color: white;
     text-decoration: none;
     border-radius: 4px;
-    transition: opacity 1s ease-in;
-    position: relative;
-    z-index: 2;
+    transition: opacity 1s ease-in; /* Transition douce pour l'apparition */
+    text-align: center;
+    font-size: 1.1em;
+    cursor: pointer; /* Indique que c'est cliquable */
+    -webkit-tap-highlight-color: transparent; /* Supprime l'effet de surbrillance au toucher sur iOS */
+    z-index: 2; /* Assure que le lien est au-dessus de tout */
   }
   #continue-link.visible {
-    opacity: 1;
+    opacity: 1; /* Rendu visible */
   }
+
+  /* Curseur clignotant */
   .cursor {
     animation: blink 1s step-end infinite;
+    display: inline-block; /* S'assure qu'il est sur la même ligne que le dernier caractère */
+    vertical-align: bottom; /* Aligne le curseur avec la ligne de base du texte */
+    margin-left: 2px; /* Petit espace pour le curseur */
   }
   @keyframes blink {
     from, to { opacity: 1; }
     50% { opacity: 0; }
   }
   
-  /* Animation feu d'artifice CORRIGÉE */
+  /* Animation feu d'artifice */
   .fireworks-container {
-    position: absolute;
+    position: absolute; /* Positionné par rapport au body */
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none;
-    z-index: 0;
+    pointer-events: none; /* Permet de cliquer/toucher les éléments derrière */
+    z-index: 0; /* Placé en arrière-plan */
+    overflow: hidden; /* Empêche les feux de déborder du body */
   }
   .firework {
     position: absolute;
@@ -74,36 +103,75 @@
     height: 4px;
     border-radius: 50%;
     animation: explode 1.2s ease-out forwards;
-    opacity: 0;
+    opacity: 0; /* Caché au début de l'animation */
   }
   @keyframes explode {
     0% { 
       transform: translate(0, 0) scale(1); 
       opacity: 1;
-      box-shadow: 0 0 2px #fff, 0 0 3px #000;
+      box-shadow: 0 0 2px var(--firework-color, #fff), 0 0 3px var(--firework-shadow-color, #000);
     }
     100% { 
       transform: translate(var(--tx), var(--ty)) scale(0); 
       opacity: 0;
-      box-shadow: 0 0 8px #fff, 0 0 10px #000;
+      box-shadow: 0 0 8px var(--firework-color, #fff), 0 0 10px var(--firework-shadow-color, #000);
     }
   }
+
+  /* Media Queries pour les petits écrans (smartphones portrait) */
+  @media (max-width: 500px) {
+    body {
+      padding: 15px;
+      font-size: 1em;
+    }
+    #typing-text {
+      min-height: 180px;
+      padding: 15px;
+    }
+    #continue-link {
+      padding: 10px 20px;
+      font-size: 1em;
+    }
+  }
+
+  /* Media Queries pour les écrans très petits */
+  @media (max-width: 350px) {
+    body {
+      font-size: 0.9em;
+    }
+    #typing-text {
+      min-height: 150px;
+    }
+  }
+
 </style>
 </head>
 <body>
 
 <div id="typing-text"></div>
 <div id="fireworks-container" class="fireworks-container"></div>
+<a href="https://shogunfever.github.io/Madame/szymbo" id="continue-link">Lancer les épreuves</a>
+
 
 <script>
 const textLines = [
   {text: "Madame,", delayAfter: 100},
   {text: "\n\nNous avons franchi une étape importante de notre relation", delayAfter: 100},
   {text: "\nFélicitations!", delayAfter: 100, special: function() {
-    // Positionnement sous "Félicitations!"
-    const lineHeight = 24; // Hauteur approximative d'une ligne
-    const offsetTop = 4 * lineHeight; // 4 lignes au-dessus
-    showFireworks(offsetTop);
+    // Calcul précis de la position des feux d'artifice
+    // Obtenir la position de l'élément de texte
+    const typingRect = typingElement.getBoundingClientRect();
+    // La position de "Félicitations!" est sur la 3ème ligne (index 2 + les retours à la ligne)
+    // Approximation: 3ème ligne + 2 retours à la ligne = 5 lignes environ.
+    // Ou, pour être plus précis, on peut calculer en fonction de la hauteur actuelle du texte.
+    const currentTextHeight = typingElement.scrollHeight; // Hauteur de tout le contenu
+    
+    // Pour que les feux apparaissent au bon endroit, il faut les positionner par rapport au document/viewport
+    // offsetTop ici sera la position Y par rapport au top du document
+    // On estime le centre de la ligne "Félicitations!"
+    const targetLineOffset = typingRect.top + window.scrollY + currentTextHeight; // Position juste sous le texte actuel
+    
+    showFireworks(targetLineOffset - 20); // Ajuste pour être un peu au-dessus de la ligne
   }},
   {text: "\nVous n'êtes pas un robot!", delayAfter: 800},
   {text: "\nVoilà", delayAfter: 800},
@@ -118,68 +186,108 @@ const textLines = [
 const typingElement = document.getElementById('typing-text');
 const continueLink = document.getElementById('continue-link');
 const fireworksContainer = document.getElementById('fireworks-container');
-let lineIndex = 0;
-let charIndex = 0;
 
-function showFireworks(offsetTop) {
-  // Crée plusieurs particules pour l'effet feu d'artifice
+let currentLineIndex = 0;
+let currentCharIndex = 0;
+let displayedTextContent = ''; // Accumule le texte pour .textContent
+
+function showFireworks(yPos) {
+  // Coordonnées du centre de l'explosion, par rapport au document
+  // On veut les placer au centre horizontalement du conteneur de texte.
+  const typingRect = typingElement.getBoundingClientRect();
+  const centerX = typingRect.left + typingRect.width / 2; // Centre horizontal du texte
+
   for (let i = 0; i < 50; i++) {
     const firework = document.createElement('div');
     firework.className = 'firework';
     
-    // Position aléatoire autour du centre
-    const centerX = 50 + Math.random() * 20 - 10; // 40-60%
-    const centerY = offsetTop + 20;
-    
-    // Direction aléatoire
+    // Position de départ du feu d'artifice (absolue dans le document)
+    firework.style.left = centerX + 'px';
+    firework.style.top = yPos + 'px';
+
+    // Direction aléatoire pour l'explosion
     const angle = Math.random() * Math.PI * 2;
-    const distance = 50 + Math.random() * 70;
+    const distance = 50 + Math.random() * 70; // Distance de propagation
     const tx = Math.cos(angle) * distance;
     const ty = Math.sin(angle) * distance;
     
     firework.style.setProperty('--tx', tx + 'px');
     firework.style.setProperty('--ty', ty + 'px');
-    firework.style.left = centerX + '%';
-    firework.style.top = centerY + 'px';
-    firework.style.backgroundColor = i % 2 === 0 ? '#000' : '#fff';
-    firework.style.animationDelay = (Math.random() * 0.3) + 's';
+    
+    // Couleurs aléatoires
+    const colors = ['#FFD700', '#FF4500', '#ADFF2F', '#1E90FF', '#FF1493', '#FFFFFF', '#000000']; // Ajout de noir et blanc
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    firework.style.setProperty('--firework-color', randomColor);
+    firework.style.setProperty('--firework-shadow-color', randomColor === '#000' ? '#fff' : randomColor); // Ombre adaptée
+    
+    firework.style.animationDelay = (Math.random() * 0.3) + 's'; // Petit délai pour un effet plus naturel
     
     fireworksContainer.appendChild(firework);
     
-    // Supprime l'élément après l'animation
+    // Supprime l'élément après l'animation pour éviter l'accumulation dans le DOM
     setTimeout(() => {
       if (firework.parentNode) {
         firework.parentNode.removeChild(firework);
       }
-    }, 1200);
+    }, 1200); // Durée de l'animation
   }
 }
+
 
 function typeWriter() {
-  if (lineIndex < textLines.length) {
-    const currentLine = textLines[lineIndex];
-    
-    if (charIndex < currentLine.text.length) {
-      typingElement.textContent += currentLine.text[charIndex];
-      charIndex++;
-      setTimeout(typeWriter, Math.random() * 50 + 30);
-    } else {
-      // Exécute la fonction spéciale si elle existe
-      if (currentLine.special) {
-        currentLine.special();
-      }
-      
-      charIndex = 0;
-      lineIndex++;
-      setTimeout(typeWriter, currentLine.delayAfter);
+    // Vérification de fin de texte
+    if (currentLineIndex >= textLines.length) {
+        // Ajouter le curseur clignotant à la fin
+        const cursorSpan = document.createElement('span');
+        cursorSpan.classList.add('cursor');
+        cursorSpan.textContent = '|';
+        typingElement.appendChild(cursorSpan); // Ajoute au DOM existant
+        
+        // Afficher le lien "Lancer les épreuves"
+        // Le lien est maintenant un élément fixe, il n'est pas "append" au texte.
+        if (!continueLink.classList.contains('visible')) {
+            continueLink.classList.add('visible');
+        }
+        return; // Arrête la récursion
     }
-  } else {
-    typingElement.innerHTML += '<span class="cursor">|</span>';
-    continueLink.classList.add('visible');
-  }
+
+    const currentLine = textLines[currentLineIndex];
+
+    // Vérification de robustesse au cas où une ligne serait mal définie
+    if (!currentLine || typeof currentLine.text !== 'string') {
+        console.error("Erreur: La ligne de texte est indéfinie ou n'est pas une chaîne:", currentLine);
+        // Avancer pour éviter la boucle infinie
+        currentLineIndex++;
+        currentCharIndex = 0;
+        setTimeout(typeWriter, 50); 
+        return;
+    }
+
+    // Si nous ne sommes pas à la fin de la ligne actuelle
+    if (currentCharIndex < currentLine.text.length) {
+        displayedTextContent += currentLine.text.charAt(currentCharIndex);
+        typingElement.textContent = displayedTextContent; // Mise à jour du contenu brut
+        
+        currentCharIndex++;
+        setTimeout(typeWriter, Math.random() * 50 + 30); // Vitesse de frappe
+    } else {
+        // Fin de la ligne actuelle
+        
+        // Exécute la fonction spéciale si elle existe
+        // NOTE: La fonction `special` est appelée une fois que la ligne est entièrement tapée.
+        if (currentLine.special && typeof currentLine.special === 'function') {
+            currentLine.special();
+        }
+        
+        // Passer à la ligne suivante après le délai spécifié
+        currentLineIndex++;
+        currentCharIndex = 0; // Réinitialiser l'index du caractère pour la nouvelle ligne
+        setTimeout(typeWriter, currentLine.delayAfter);
+    }
 }
 
-setTimeout(typeWriter, 1000);
+// Démarrer l'animation
+setTimeout(typeWriter, 1000); // Laisse un petit délai avant de commencer
 </script>
 
 </body>
