@@ -25,17 +25,7 @@
     box-sizing: border-box;
     word-wrap: break-word; /* Important pour les longs mots sur petits écrans */
   }
-  .paranoia {
-    display: inline-block;
-    font-weight: normal;
-    color: inherit;
-    transition: all 2s ease-out;
-  }
-  .paranoia.final {
-    font-size: 1.3em; /* Ajusté pour mobile */
-    color: #ff0000;
-    font-weight: bold;
-  }
+  /* Les styles .paranoia et .paranoia.final ont été supprimés */
   #continue-link {
     opacity: 0;
     display: block; /* Passe en block pour prendre toute la largeur disponible sur mobile */
@@ -70,9 +60,6 @@
     #typing-text {
       min-height: 150px; /* Encore plus petit sur les très petits écrans */
     }
-    .paranoia.final {
-      font-size: 1.2em; /* Réajuste la taille du mot final */
-    }
     #continue-link {
       padding: 10px 20px;
       font-size: 1em;
@@ -102,8 +89,6 @@ const typingElement = document.getElementById('typing-text');
 const continueLink = document.getElementById('continue-link');
 let lineIndex = 0;
 let charIndex = 0;
-let isParanoiaWordActive = false; // Renommé pour plus de clarté
-const targetWord = "paranoïaque.";
 
 function typeWriter() {
   if (lineIndex < textLines.length) {
@@ -112,35 +97,12 @@ function typeWriter() {
     if (charIndex < currentLine.text.length) {
       let charToAdd = currentLine.text[charIndex];
       
-      // Détecter le début du mot "paranoïaque"
-      if (!isParanoiaWordActive && currentLine.text.substring(charIndex, charIndex + targetWord.length) === targetWord) {
-        isParanoiaWordActive = true;
-        // Créer un nouveau span et l'ajouter au typingElement
-        const span = document.createElement('span');
-        span.classList.add('paranoia');
-        typingElement.appendChild(span);
-      }
-
-      // Si le mode "paranoïaque" est actif, ajouter le caractère au dernier span .paranoia
-      if (isParanoiaWordActive) {
-        const lastParanoiaSpan = typingElement.querySelector('.paranoia:last-child');
-        lastParanoiaSpan.textContent += charToAdd;
-        
-        // Si c'est le dernier caractère du mot cible, désactiver le mode et appliquer la classe 'final'
-        if (lastParanoiaSpan.textContent === targetWord) {
-          isParanoiaWordActive = false;
-          setTimeout(() => {
-            lastParanoiaSpan.classList.add('final');
-          }, 500); // Délai pour que le texte soit visible avant l'animation
-        }
+      // Ajouter le caractère directement au typingElement
+      // Gérer les sauts de ligne ou ajouter un nœud texte pour les autres caractères
+      if (charToAdd === '\n') {
+          typingElement.appendChild(document.createElement('br'));
       } else {
-        // Sinon, ajouter le caractère directement au typingElement
-        // Important: pour gérer les sauts de ligne correctement avec pre-wrap, il faut ajouter des nœuds texte
-        if (charToAdd === '\n') {
-            typingElement.appendChild(document.createElement('br'));
-        } else {
-            typingElement.appendChild(document.createTextNode(charToAdd));
-        }
+          typingElement.appendChild(document.createTextNode(charToAdd));
       }
       
       charIndex++;
