@@ -102,46 +102,62 @@ const typingElement = document.getElementById('typing-text');
 const continueLink = document.getElementById('continue-link');
 let lineIndex = 0;
 let charIndex = 0;
-let isParanoiaWord = false;
-let paranoiaWordIndex = 0;
+let isParanoiaWordActive = false; // Renommé pour plus de clarté
 const targetWord = "paranoïaque.";
 
 function typeWriter() {
   if (lineIndex < textLines.length) {
     const currentLine = textLines[lineIndex];
     
-    // Pour ne pas ajouter de <span> si on est au début d'une nouvelle ligne
-    let charToAdd = currentLine.text[charIndex];
-    
-    // Vérifie si nous commençons à taper le mot "paranoïaque"
-    if (!isParanoiaWord && charToAdd === targetWord[0] && currentLine.text.substring(charIndex, charIndex + targetWord.length) === targetWord) {
-        isParanoiaWord = true;
-        paranoiaWordIndex = 0; // Réinitialise pour le nouveau mot
-        typingElement.innerHTML += '<span class="paranoia">';
-    }
+    if (charIndex < currentLine.text.length) {
+      let charToAdd = currentLine.text[charIndex];
+      
+      // Détecter le début du mot "paranoïaque"
+      if (!isParanoiaWordActive && currentLine.text.substring(charIndex, charIndex + targetWord.length) === targetWord) {
+        isParanoiaWordActive = true;
+        // Créer un nouveau span et l'ajouter au typingElement
+        const span = document.createElement('span');
+        span.classList.add('paranoia');
+        typingElement.appendChild(span);
+      }
 
-    if (isParanoiaWord && charToAdd === targetWord[paranoiaWordIndex]) {
-        typingElement.querySelector('.paranoia:last-child').textContent += charToAdd;
-        paranoiaWordIndex++;
-        if (paranoiaWordIndex === targetWord.length) {
-            isParanoiaWord = false;
-            // Applique la classe 'final' après un court délai pour l'animation
-            setTimeout(() => {
-                const paranoiaSpans = typingElement.querySelectorAll('.paranoia');
-                if (paranoiaSpans.length > 0) {
-                    paranoiaSpans[paranoiaSpans.length - 1].classList.add('final');
-                }
-            }, 500);
+      // Si le mode "paranoïaque" est actif, ajouter le caractère au dernier span .paranoia
+      if (isParanoiaWordActive) {
+        const lastParanoiaSpan = typingElement.querySelector('.paranoia:last-child');
+        lastParanoiaSpan.textContent += charToAdd;
+        
+        // Si c'est le dernier caractère du mot cible, désactiver le mode et appliquer la classe 'final'
+        if (lastParanoiaSpan.textContent === targetWord) {
+          isParanoiaWordActive = false;
+          setTimeout(() => {
+            lastParanoiaSpan.classList.add('final');
+          }, 500); // Délai pour que le texte soit visible avant l'animation
         }
+      } else {
+        // Sinon, ajouter le caractère directement au typingElement
+        // Important: pour gérer les sauts de ligne correctement avec pre-wrap, il faut ajouter des nœuds texte
+        if (charToAdd === '\n') {
+            typingElement.appendChild(document.createElement('br'));
+        } else {
+            typingElement.appendChild(document.createTextNode(charToAdd));
+        }
+      }
+      
+      charIndex++;
+      setTimeout(typeWriter, Math.random() * 50 + 30); // Vitesse de frappe variable
     } else {
-        typingElement.textContent += charToAdd;
+      // Fin de la ligne - pause avant la suivante
+      charIndex = 0;
+      lineIndex++;
+      setTimeout(typeWriter, currentLine.delayAfter);
     }
-    
-    charIndex++;
-    setTimeout(typeWriter, Math.random() * 50 + 30); // Vitesse de frappe variable
   } else {
     // Fin du texte - affiche le curseur clignotant
-    typingElement.innerHTML += '<span class="cursor">|</span>';
+    const cursorSpan = document.createElement('span');
+    cursorSpan.classList.add('cursor');
+    cursorSpan.textContent = '|';
+    typingElement.appendChild(cursorSpan);
+
     // Affiche le lien
     continueLink.classList.add('visible');
   }
