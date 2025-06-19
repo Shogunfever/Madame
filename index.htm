@@ -9,59 +9,59 @@
     font-family: 'Courier New', monospace;
     background-color: #f8f8f8;
     color: #333;
-    margin: 0; /* Supprime les marges par défaut du body */
-    padding: 20px; /* Padding global pour espacer le contenu des bords de l'écran */
+    margin: 0;
+    padding: 20px;
     line-height: 1.6;
-    font-size: 1.1em; /* Taille de base pour une meilleure lisibilité sur mobile */
-    box-sizing: border-box; /* S'assure que le padding est inclus dans la largeur/hauteur */
-    display: flex; /* Utilise flexbox pour un meilleur contrôle de la mise en page */
-    flex-direction: column; /* Empile les éléments verticalement */
-    align-items: center; /* Centre le contenu horizontalement */
-    min-height: 100vh; /* Prend au moins toute la hauteur de la vue */
+    font-size: 1.1em;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
   }
 
   /* Conteneur principal du texte */
   #typing-text {
-    width: 100%; /* Prend toute la largeur disponible */
-    max-width: 600px; /* Limite la largeur sur les grands écrans (tablettes, desktop) */
-    min-height: 250px; /* Hauteur minimale pour l'espace de frappe */
-    height: auto; /* La hauteur s'adaptera au contenu */
-    background-color: #fff; /* Fond blanc pour le bloc de texte */
-    border: 1px solid #ccc; /* Bordure légère */
-    padding: 20px; /* Padding interne pour le texte */
+    width: 100%;
+    max-width: 600px;
+    min-height: 250px;
+    height: auto;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 20px;
     box-sizing: border-box;
-    overflow: hidden; /* Cache tout ce qui dépasse, mais le texte est géré par la JS */
-    white-space: pre-wrap; /* Maintient les sauts de ligne et espaces du JS */
-    word-wrap: break-word; /* Casse les mots longs pour éviter le débordement horizontal */
-    border-right: 2px solid #333; /* Effet curseur visuel */
+    overflow: hidden;
+    white-space: pre-wrap; /* Maintient les sauts de ligne et espaces */
+    word-wrap: break-word; /* Casse les mots longs pour éviter le débordement */
   }
 
   /* Style du lien "Lancer les épreuves" */
   #continue-link {
-    opacity: 0; /* Caché par défaut */
-    display: block; /* Prend sa propre ligne */
-    width: fit-content; /* Sa largeur s'adapte à son contenu */
-    margin-top: 30px; /* Espacement au-dessus */
-    padding: 12px 25px; /* Augmente la zone cliquable/touchable */
+    opacity: 0;
+    display: block;
+    width: fit-content;
+    margin-top: 30px;
+    padding: 12px 25px;
     background-color: #333;
     color: white;
     text-decoration: none;
     border-radius: 4px;
-    transition: opacity 1s ease-in; /* Transition douce pour l'apparition */
+    transition: opacity 1s ease-in;
     text-align: center;
     font-size: 1.1em;
-    cursor: pointer; /* Indique que c'est cliquable */
-    -webkit-tap-highlight-color: transparent; /* Supprime l'effet de surbrillance au toucher sur iOS */
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
   #continue-link.visible {
-    opacity: 1; /* Rendu visible */
+    opacity: 1;
   }
 
-  /* Curseur clignotant */
+  /* Curseur clignotant - n'apparaît qu'à la toute fin du texte complet */
   .cursor {
     animation: blink 1s step-end infinite;
-    display: inline-block; /* S'assure qu'il est sur la même ligne que le dernier caractère */
-    vertical-align: bottom; /* Aligne le curseur avec la ligne de base du texte */
+    display: inline-block;
+    vertical-align: bottom;
+    margin-left: 2px;
   }
   @keyframes blink {
     from, to { opacity: 1; }
@@ -71,16 +71,16 @@
   /* Media Queries pour les petits écrans (smartphones portrait) */
   @media (max-width: 500px) {
     body {
-      padding: 15px; /* Moins de padding sur les bords */
-      font-size: 1em; /* Réduit légèrement la taille de base du texte */
+      padding: 15px;
+      font-size: 1em;
     }
     #typing-text {
-      min-height: 180px; /* Adapte la hauteur minimale pour les plus petits écrans */
-      padding: 15px; /* Moins de padding interne */
+      min-height: 180px;
+      padding: 15px;
     }
     #continue-link {
-      padding: 10px 20px; /* Réduit un peu le padding du bouton */
-      font-size: 1em; /* Réduit la taille du texte du bouton */
+      padding: 10px 20px;
+      font-size: 1em;
     }
   }
 
@@ -116,60 +116,54 @@ const textLines = [
 
 const typingElement = document.getElementById('typing-text');
 const continueLink = document.getElementById('continue-link');
-let lineIndex = 0;
-let charIndex = 0;
-let cursorElement = null; // Pour gérer le curseur séparément
+
+let currentLineIndex = 0;
+let currentCharIndex = 0;
+let displayedText = ''; // Accumule le texte à afficher
 
 function typeWriter() {
-  // Supprimer l'ancien curseur s'il existe avant d'ajouter le prochain caractère
-  if (cursorElement && cursorElement.parentNode) {
-    cursorElement.parentNode.removeChild(cursorElement);
-  }
-
-  if (lineIndex < textLines.length) {
-    const currentLine = textLines[lineIndex];
-    
-    if (charIndex < currentLine.text.length) {
-      let charToAdd = currentLine.text[charIndex];
-      
-      // La manière la plus sûre d'ajouter du texte sans interférer avec d'autres éléments HTML
-      // ou causer des re-renderings qui écrasent le DOM
-      if (charToAdd === '\n') {
-          typingElement.appendChild(document.createElement('br'));
-      } else {
-          typingElement.appendChild(document.createTextNode(charToAdd));
-      }
-      
-      charIndex++;
-      // Vitesse de frappe variable, légèrement ajustée si nécessaire pour mobile
-      setTimeout(typeWriter, Math.random() * 50 + 30);
-    } else {
-      // Fin de la ligne - pause avant la suivante
-      charIndex = 0;
-      lineIndex++;
-      setTimeout(typeWriter, currentLine.delayAfter);
+    // Si nous avons dépassé toutes les lignes, terminer.
+    if (currentLineIndex >= textLines.length) {
+        // Ajouter le curseur clignotant à la fin
+        const cursorSpan = document.createElement('span');
+        cursorSpan.classList.add('cursor');
+        cursorSpan.textContent = '|';
+        typingElement.appendChild(cursorSpan); // Ajoute au DOM existant
+        
+        // Afficher le lien
+        continueLink.classList.add('visible');
+        return; // Arrête la récursion
     }
-  } else {
-    // Fin du texte : Afficher le curseur final et le lien
-    cursorElement = document.createElement('span');
-    cursorElement.classList.add('cursor');
-    cursorElement.textContent = '|';
-    typingElement.appendChild(cursorElement);
 
-    continueLink.classList.add('visible');
-  }
+    const currentLine = textLines[currentLineIndex];
 
-  // Si le curseur n'est pas le curseur final et qu'il n'est pas encore ajouté, l'ajouter après chaque caractère
-  if (!cursorElement && lineIndex < textLines.length) {
-      cursorElement = document.createElement('span');
-      cursorElement.classList.add('cursor');
-      cursorElement.textContent = '|';
-      typingElement.appendChild(cursorElement);
-  }
+    // S'assurer que currentLine et currentLine.text sont définis et que c'est une chaîne
+    if (!currentLine || typeof currentLine.text !== 'string') {
+        console.error("Erreur: La ligne de texte est indéfinie ou n'est pas une chaîne:", currentLine);
+        // Si cela arrive, nous allons tenter de passer à la ligne suivante pour éviter la boucle infinie
+        currentLineIndex++;
+        currentCharIndex = 0;
+        setTimeout(typeWriter, 50); // Petit délai avant de réessayer
+        return;
+    }
+
+    // Si nous ne sommes pas à la fin de la ligne actuelle
+    if (currentCharIndex < currentLine.text.length) {
+        displayedText += currentLine.text.charAt(currentCharIndex); // Utilise charAt pour plus de sécurité
+        typingElement.textContent = displayedText; // Met à jour le DOM
+        
+        currentCharIndex++;
+        setTimeout(typeWriter, Math.random() * 50 + 30); // Vitesse de frappe variable
+    } else {
+        // Fin de la ligne actuelle, passer à la suivante après le délai spécifié
+        currentLineIndex++;
+        currentCharIndex = 0; // Réinitialiser l'index du caractère pour la nouvelle ligne
+        setTimeout(typeWriter, currentLine.delayAfter);
+    }
 }
 
 // Démarrer l'animation
-setTimeout(typeWriter, 1000);
+setTimeout(typeWriter, 1000); // Laisse un petit délai avant de commencer
 </script>
 
 </body>
