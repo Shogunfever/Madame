@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Test d'Humanité n°1</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700&family=Playfair+Display:wght@700&display=swap');
   
@@ -21,6 +22,9 @@
     margin: 0;
     padding: 0;
     overflow-x: hidden;
+    min-height: 100vh; /* S'assure que le body prend au moins toute la hauteur de la vue */
+    display: flex;
+    flex-direction: column;
   }
   
   .header {
@@ -49,6 +53,7 @@
     max-width: 800px;
     margin: 0 auto;
     padding: 0 20px;
+    flex-grow: 1; /* Permet au contenu principal de prendre l'espace disponible */
   }
   
   h1 {
@@ -57,6 +62,7 @@
     font-weight: 700;
     margin-bottom: 15px;
     line-height: 1.2;
+    text-align: center; /* Centré pour mobile */
   }
   
   .subhead {
@@ -64,16 +70,24 @@
     color: var(--secondary);
     margin-bottom: 30px;
     font-weight: 400;
+    text-align: center; /* Centré pour mobile */
   }
   
   .game-container {
     position: relative;
-    margin: 40px 0;
-    min-height: 400px;
+    margin: 40px auto; /* Centré horizontalement */
+    width: 90%; /* Prend 90% de la largeur disponible */
+    max-width: 600px; /* Limite la largeur max */
+    min-height: 300px; /* Hauteur minimale pour le mobile */
+    aspect-ratio: 4/3; /* Maintient un ratio d'aspect pour le container */
+    background-color: var(--light); /* Ajout d'un fond pour visualiser la zone de jeu */
+    border-radius: 8px;
+    overflow: hidden; /* Cache les fantômes qui sortent du cadre du conteneur de jeu */
   }
   
   #szymborska {
-    width: 200px;
+    width: 150px; /* Plus petit sur mobile */
+    height: auto;
     cursor: pointer;
     position: absolute;
     left: 50%;
@@ -81,13 +95,15 @@
     transform: translate(-50%, -50%);
     transition: transform 0.08s ease-out;
     z-index: 20;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    border: 1px solid var(--border);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Ombre plus prononcée */
+    border: 2px solid var(--border);
+    touch-action: none; /* Empêche le défilement par défaut sur le touch */
   }
   
   .ghost {
     position: absolute;
-    width: 120px;
+    width: 80px; /* Plus petit sur mobile */
+    height: auto;
     opacity: 0;
     z-index: 10;
     pointer-events: none;
@@ -98,21 +114,23 @@
   .stats {
     display: flex;
     justify-content: center;
-    gap: 30px;
+    flex-wrap: wrap; /* Permet aux éléments de passer à la ligne */
+    gap: 20px; /* Réduit le gap pour mobile */
     margin: 30px 0;
-    font-size: 1.1rem;
+    font-size: 1rem; /* Taille de police légèrement réduite */
   }
   
   .stat-box {
     text-align: center;
-    padding: 15px 25px;
+    padding: 10px 20px; /* Réduit le padding */
     background: var(--light);
     border-radius: 3px;
+    min-width: 120px; /* S'assure que les boîtes ne sont pas trop petites */
   }
   
   .stat-value {
     font-weight: 700;
-    font-size: 1.4rem;
+    font-size: 1.2rem; /* Taille de police légèrement réduite */
     margin-top: 5px;
     color: var(--accent);
   }
@@ -133,6 +151,7 @@
     font-size: 1rem;
     cursor: pointer;
     transition: background 0.3s;
+    border-radius: 5px; /* Bordures légèrement arrondies */
   }
   
   .continue-btn:hover {
@@ -152,6 +171,68 @@
   @keyframes ghostMove {
     0% { transform: translateX(0) translateY(0); opacity: 0.8; }
     100% { transform: translateX(calc(100vw * var(--tx))) translateY(calc(100vh * var(--ty))); opacity: 0; }
+  }
+
+  /* Styles pour l'overlay de résultat */
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .overlay-content {
+    background-color: white;
+    padding: 30px; /* Réduit le padding */
+    margin: 20px; /* Ajoute une marge pour les petits écrans */
+    max-width: 90%; /* S'adapte mieux aux petits écrans */
+    text-align: center;
+    border-radius: 8px; /* Bords arrondis */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+
+  .overlay-content h2 {
+    font-size: 1.6rem; /* Ajuste la taille du titre */
+    margin-bottom: 20px;
+  }
+
+  /* Media Queries pour des ajustements spécifiques aux très petits écrans */
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 2rem;
+    }
+    .subhead {
+      font-size: 1.1rem;
+    }
+    #szymborska {
+      width: 120px;
+    }
+    .ghost {
+      width: 60px;
+    }
+    .stat-box {
+      padding: 8px 15px;
+      font-size: 0.9rem;
+    }
+    .stat-value {
+      font-size: 1rem;
+    }
+    .continue-btn {
+      padding: 10px 25px;
+      font-size: 0.9rem;
+    }
+    .overlay-content {
+      padding: 20px;
+    }
+    .overlay-content h2 {
+      font-size: 1.4rem;
+    }
   }
 </style>
 </head>
@@ -187,13 +268,16 @@ let score = 0;
 let timeLeft = 7;
 let gameStarted = false;
 let attempt = 0;
-let isMouseDown = false;
+let isInteracting = false; // Utilisé pour le toucher et la souris
 let velocity = 0;
+let lastX = 0; // Pour calculer la vitesse sur mobile
+let lastY = 0; // Pour calculer la vitesse sur mobile
 
 const szymborska = document.getElementById('szymborska');
 const scoreDisplay = document.getElementById('score');
 const timerDisplay = document.getElementById('timer');
 const continueBtn = document.getElementById('continue').querySelector('.continue-btn');
+const gameContainer = document.querySelector('.game-container'); // Référence au conteneur du jeu
 
 const messages = [
   "Du nerf, Madame, en l'état, vous êtes ni plus ni moins: un robot!",
@@ -204,29 +288,30 @@ const messages = [
 ];
 
 // Création des fantômes
-function createGhost() {
+function createGhost(eventX, eventY) {
   if (!gameStarted || timeLeft <= 0) return;
   
   const ghost = document.createElement('img');
   ghost.className = 'ghost';
   ghost.src = szymborska.src;
   
-  // Position de départ autour de l'image principale
-  const angle = Math.random() * Math.PI * 2;
-  const distance = 50 + Math.random() * 100;
-  const startX = window.innerWidth/2 + Math.cos(angle) * distance;
-  const startY = window.innerHeight/2 + Math.sin(angle) * distance;
+  // Position de départ proche de l'endroit où l'image est agitée
+  // Convertir les coordonnées de l'événement en coordonnées relatives au conteneur du jeu
+  const gameContainerRect = gameContainer.getBoundingClientRect();
+  const startX = eventX - gameContainerRect.left;
+  const startY = eventY - gameContainerRect.top;
+
+  ghost.style.left = `${startX - ghost.offsetWidth / 2}px`;
+  ghost.style.top = `${startY - ghost.offsetHeight / 2}px`;
   
   // Direction aléatoire
-  const tx = Math.random() * 2 - 1;
-  const ty = Math.random() * 2 - 1;
+  const tx = (Math.random() * 2 - 1) * 0.5; // Multiplier par une valeur plus petite pour rester plus local
+  const ty = (Math.random() * 2 - 1) * 0.5;
   
-  ghost.style.left = `${startX}px`;
-  ghost.style.top = `${startY}px`;
   ghost.style.setProperty('--tx', tx);
   ghost.style.setProperty('--ty', ty);
   
-  document.body.appendChild(ghost);
+  gameContainer.appendChild(ghost); // Ajouté au conteneur du jeu pour un meilleur contrôle
   
   // Animation
   ghost.style.opacity = '0.8';
@@ -263,30 +348,14 @@ function showResult() {
   
   // Création d'une overlay style NYT
   const overlay = document.createElement('div');
-  overlay.style.position = 'fixed';
-  overlay.style.top = '0';
-  overlay.style.left = '0';
-  overlay.style.width = '100%';
-  overlay.style.height = '100%';
-  overlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
-  overlay.style.display = 'flex';
-  overlay.style.justifyContent = 'center';
-  overlay.style.alignItems = 'center';
-  overlay.style.zIndex = '1000';
+  overlay.className = 'overlay'; // Utilise la classe CSS
   
   // Contenu de l'overlay
   const content = document.createElement('div');
-  content.style.backgroundColor = 'white';
-  content.style.padding = '40px';
-  content.style.maxWidth = '600px';
-  content.style.width = '90%';
-  content.style.textAlign = 'center';
+  content.className = 'overlay-content'; // Utilise la classe CSS
   
   const heading = document.createElement('h2');
   heading.textContent = message;
-  heading.style.fontFamily = "'Playfair Display', serif";
-  heading.style.marginBottom = '30px';
-  heading.style.fontSize = '1.8rem';
   
   const closeBtn = document.createElement('button');
   closeBtn.textContent = 'Fermer';
@@ -296,7 +365,9 @@ function showResult() {
   closeBtn.style.fontFamily = "'Libre Franklin', sans-serif";
   closeBtn.style.cursor = 'pointer';
   closeBtn.style.transition = 'all 0.3s';
-  
+  closeBtn.style.borderRadius = '5px';
+  closeBtn.style.color = 'var(--primary)'; // Couleur du texte par défaut
+
   closeBtn.addEventListener('mouseenter', () => {
     closeBtn.style.background = 'var(--primary)';
     closeBtn.style.color = 'white';
@@ -316,6 +387,7 @@ function showResult() {
     } else {
       gameStarted = false;
       szymborska.style.transform = 'translate(-50%, -50%)';
+      velocity = 0; // Réinitialise la vélocité
     }
   });
   
@@ -325,20 +397,28 @@ function showResult() {
   document.body.appendChild(overlay);
 }
 
-// Événements
+// Événements pour la souris
 szymborska.addEventListener('mousedown', (e) => {
-  isMouseDown = true;
+  isInteracting = true;
   startGame();
+  lastX = e.clientX;
+  lastY = e.clientY;
 });
 
 document.addEventListener('mouseup', () => {
-  isMouseDown = false;
+  isInteracting = false;
+  velocity = 0; // Réinitialise la vélocité quand le clic est relâché
 });
 
 document.addEventListener('mousemove', (e) => {
-  if (gameStarted && timeLeft > 0 && isMouseDown) {
+  if (gameStarted && timeLeft > 0 && isInteracting) {
+    const movementX = e.movementX || (e.clientX - lastX);
+    const movementY = e.movementY || (e.clientY - lastY);
+    lastX = e.clientX;
+    lastY = e.clientY;
+
     // Calcul de la vitesse
-    velocity = Math.sqrt(e.movementX ** 2 + e.movementY ** 2);
+    velocity = Math.sqrt(movementX ** 2 + movementY ** 2);
     
     // Mouvement de l'image principale
     const shakeX = (Math.random() * 30 - 15) * (velocity/10) + 'px';
@@ -353,11 +433,61 @@ document.addEventListener('mousemove', (e) => {
     
     // Création de fantômes
     if (Math.random() < velocity/150) {
-      createGhost();
+      createGhost(e.clientX, e.clientY);
     }
     
     // Mise à jour du score
     score += Math.floor(velocity/3);
+    scoreDisplay.textContent = score;
+  }
+});
+
+
+// Événements tactiles
+szymborska.addEventListener('touchstart', (e) => {
+  e.preventDefault(); // Empêche le défilement par défaut
+  isInteracting = true;
+  startGame();
+  const touch = e.touches[0];
+  lastX = touch.clientX;
+  lastY = touch.clientY;
+});
+
+document.addEventListener('touchend', () => {
+  isInteracting = false;
+  velocity = 0; // Réinitialise la vélocité quand le toucher est relâché
+});
+
+document.addEventListener('touchmove', (e) => {
+  e.preventDefault(); // Empêche le défilement par défaut
+  if (gameStarted && timeLeft > 0 && isInteracting && e.touches.length > 0) {
+    const touch = e.touches[0];
+    const movementX = touch.clientX - lastX;
+    const movementY = touch.clientY - lastY;
+    lastX = touch.clientX;
+    lastY = touch.clientY;
+
+    // Calcul de la vitesse
+    velocity = Math.sqrt(movementX ** 2 + movementY ** 2);
+    
+    // Mouvement de l'image principale
+    const shakeX = (Math.random() * 30 - 15) * (velocity/10) + 'px';
+    const shakeY = (Math.random() * 30 - 15) * (velocity/10) + 'px';
+    const rotate = (Math.random() * 20 - 10) * (velocity/20) + 'deg';
+    
+    szymborska.style.transform = `
+      translate(-50%, -50%) 
+      translate(${shakeX}, ${shakeY})
+      rotate(${rotate})
+    `;
+    
+    // Création de fantômes
+    if (Math.random() < velocity/100) { // Ajusté légèrement la probabilité pour mobile
+      createGhost(touch.clientX, touch.clientY);
+    }
+    
+    // Mise à jour du score
+    score += Math.floor(velocity/2); // Score ajusté pour le mobile (sensibilité différente)
     scoreDisplay.textContent = score;
   }
 });
