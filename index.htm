@@ -2,22 +2,28 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Dialogue interactif</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Dialogue interactif</title>
 <style>
   body {
     font-family: 'Courier New', monospace;
     background-color: #f8f8f8;
     color: #333;
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 40px 20px;
+    max-width: 90%; /* Prend 90% de la largeur de l'écran */
+    width: 600px; /* Largeur maximale pour les écrans plus grands */
+    margin: 0 auto; /* Centre le contenu */
+    padding: 20px 10px; /* Réduit le padding pour les mobiles */
     line-height: 1.6;
+    font-size: 1.1em; /* Légèrement plus grand pour la lisibilité sur mobile */
+    box-sizing: border-box; /* S'assure que le padding est inclus dans la largeur */
   }
   #typing-text {
     white-space: pre-wrap;
     overflow: hidden;
     border-right: 2px solid #333;
-    min-height: 300px;
+    min-height: 200px; /* Hauteur minimale ajustée pour mobile */
+    padding-right: 5px; /* Pour éviter que le curseur ne colle au texte */
+    box-sizing: border-box;
+    word-wrap: break-word; /* Important pour les longs mots sur petits écrans */
   }
   .paranoia {
     display: inline-block;
@@ -26,20 +32,23 @@
     transition: all 2s ease-out;
   }
   .paranoia.final {
-    font-size: 1.5em;
+    font-size: 1.3em; /* Ajusté pour mobile */
     color: #ff0000;
     font-weight: bold;
   }
   #continue-link {
     opacity: 0;
-    display: inline-block;
-    margin-top: 20px;
-    padding: 10px 20px;
+    display: block; /* Passe en block pour prendre toute la largeur disponible sur mobile */
+    width: fit-content; /* S'adapte au contenu */
+    margin: 20px auto 0; /* Centre le bouton */
+    padding: 12px 25px; /* Augmente légèrement le padding pour faciliter le toucher */
     background-color: #333;
     color: white;
     text-decoration: none;
     border-radius: 4px;
     transition: opacity 1s ease-in;
+    text-align: center; /* Centrage du texte si le bouton est plus large */
+    font-size: 1.1em; /* Taille de police du bouton */
   }
   #continue-link.visible {
     opacity: 1;
@@ -50,6 +59,24 @@
   @keyframes blink {
     from, to { opacity: 1; }
     50% { opacity: 0; }
+  }
+
+  /* Media Queries pour des ajustements spécifiques aux écrans plus petits */
+  @media (max-width: 480px) {
+    body {
+      font-size: 1em; /* Taille de base légèrement plus petite pour les très petits écrans */
+      padding: 15px 10px;
+    }
+    #typing-text {
+      min-height: 150px; /* Encore plus petit sur les très petits écrans */
+    }
+    .paranoia.final {
+      font-size: 1.2em; /* Réajuste la taille du mot final */
+    }
+    #continue-link {
+      padding: 10px 20px;
+      font-size: 1em;
+    }
   }
 </style>
 </head>
@@ -83,56 +110,40 @@ function typeWriter() {
   if (lineIndex < textLines.length) {
     const currentLine = textLines[lineIndex];
     
-    if (charIndex < currentLine.text.length) {
-      // Vérifie si nous commençons à taper le mot "paranoïaque"
-      if (currentLine.text[charIndex] === targetWord[paranoiaWordIndex] && !isParanoiaWord) {
-        if (paranoiaWordIndex === 0) {
-          isParanoiaWord = true;
-          typingElement.innerHTML += '<span class="paranoia">';
-        }
-        paranoiaWordIndex++;
-      } else if (isParanoiaWord && currentLine.text[charIndex] !== targetWord[paranoiaWordIndex-1]) {
-        isParanoiaWord = false;
-        paranoiaWordIndex = 0;
-        typingElement.innerHTML += '</span>';
-      }
-      
-      // Ajoute le caractère suivant
-      const nextChar = currentLine.text[charIndex];
-      
-      if (isParanoiaWord && paranoiaWordIndex === targetWord.length) {
-        typingElement.innerHTML += nextChar + '</span>';
-        isParanoiaWord = false;
-        paranoiaWordIndex = 0;
-        // Active l'animation du mot
-        setTimeout(() => {
-          const paranoiaSpans = document.querySelectorAll('.paranoia');
-          if (paranoiaSpans.length > 0) {
-            paranoiaSpans[paranoiaSpans.length-1].classList.add('final');
-          }
-        }, 500);
-      } else {
-        typingElement.textContent += nextChar;
-      }
-      
-      charIndex++;
-      setTimeout(typeWriter, Math.random() * 50 + 30); // Vitesse de frappe variable
-    } else {
-      // Fin de la ligne - pause avant la suivante
-      charIndex = 0;
-      lineIndex++;
-      setTimeout(typeWriter, currentLine.delayAfter);
+    // Pour ne pas ajouter de <span> si on est au début d'une nouvelle ligne
+    let charToAdd = currentLine.text[charIndex];
+    
+    // Vérifie si nous commençons à taper le mot "paranoïaque"
+    if (!isParanoiaWord && charToAdd === targetWord[0] && currentLine.text.substring(charIndex, charIndex + targetWord.length) === targetWord) {
+        isParanoiaWord = true;
+        paranoiaWordIndex = 0; // Réinitialise pour le nouveau mot
+        typingElement.innerHTML += '<span class="paranoia">';
     }
+
+    if (isParanoiaWord && charToAdd === targetWord[paranoiaWordIndex]) {
+        typingElement.querySelector('.paranoia:last-child').textContent += charToAdd;
+        paranoiaWordIndex++;
+        if (paranoiaWordIndex === targetWord.length) {
+            isParanoiaWord = false;
+            // Applique la classe 'final' après un court délai pour l'animation
+            setTimeout(() => {
+                const paranoiaSpans = typingElement.querySelectorAll('.paranoia');
+                if (paranoiaSpans.length > 0) {
+                    paranoiaSpans[paranoiaSpans.length - 1].classList.add('final');
+                }
+            }, 500);
+        }
+    } else {
+        typingElement.textContent += charToAdd;
+    }
+    
+    charIndex++;
+    setTimeout(typeWriter, Math.random() * 50 + 30); // Vitesse de frappe variable
   } else {
     // Fin du texte - affiche le curseur clignotant
     typingElement.innerHTML += '<span class="cursor">|</span>';
     // Affiche le lien
     continueLink.classList.add('visible');
-    
-    // Ferme toute balise span ouverte
-    if (isParanoiaWord) {
-      typingElement.innerHTML += '</span>';
-    }
   }
 }
 
@@ -142,4 +153,3 @@ setTimeout(typeWriter, 1000);
 
 </body>
 </html>
-
