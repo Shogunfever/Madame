@@ -2,8 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<h1>Test d'Humanité n°2</h1>
-<title> Attrapez Victor Hugo en cliquant sur la bonne image </title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Attrapez Victor Hugo en cliquant sur la bonne image</title>
 <style>
   body {
     margin: 0;
@@ -12,37 +11,52 @@
     background: linear-gradient(135deg, #2c3e50, #4ca1af);
     font-family: 'Arial', sans-serif;
     color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Alignement en haut pour laisser de la place */
+    min-height: 100vh; /* S'assure que le body prend au moins toute la hauteur de la vue */
   }
   h1 {
     text-align: center;
     margin-top: 20px;
+    font-size: 1.8em; /* Ajustement pour mobile */
+    padding: 0 10px; /* Ajout de padding pour éviter le débordement sur petits écrans */
   }
   #game {
     position: relative;
     width: 100vw;
-    height: 100vh;
+    height: calc(100vh - 100px); /* Laisse de l'espace pour le titre et le score */
+    max-width: 800px; /* Limite la largeur max pour les grands écrans/tablettes */
+    margin: auto;
+    overflow: hidden; /* Important pour que les personnages ne débordent pas */
   }
   .character {
     position: absolute;
-    width: 100px;
+    width: 80px; /* Plus petit sur mobile */
     height: auto;
     cursor: pointer;
-    transition: top 0.2s linear, left 0.2s linear;
+    transition: top 0.3s ease-out, left 0.3s ease-out; /* Transition plus fluide */
+    border-radius: 5px; /* Légers bords arrondis */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Ombre pour les faire ressortir */
   }
   #score {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    font-size: 20px;
+    position: relative; /* Rendu relatif pour être dans le flux du document */
+    top: auto;
+    left: auto;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    font-size: 1.2em; /* Ajustement pour mobile */
+    text-align: center;
     z-index: 10;
   }
   #nextTestLink {
     display: none;
-    position: absolute;
+    position: fixed; /* Utilise fixed pour le positionner au centre de la vue */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 24px;
+    font-size: 1.3em; /* Ajustement pour mobile */
     padding: 15px 30px;
     background-color: #28a745;
     color: #fff;
@@ -50,16 +64,35 @@
     border-radius: 8px;
     z-index: 100;
     text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4); /* Ombre pour le bouton */
+  }
+
+  /* Media Queries pour des ajustements supplémentaires sur petits écrans */
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 1.5em;
+    }
+    .character {
+      width: 70px; /* Encore plus petit sur les très petits écrans */
+    }
+    #score {
+      font-size: 1.1em;
+    }
+    #nextTestLink {
+      font-size: 1.1em;
+      padding: 12px 25px;
+    }
   }
 </style>
 </head>
 <body>
 
 <h1>Attrape Victor Hugo ! </h1>
+<div id="score">Cliquez sur Victor : 0 / 3</div>
 <div id="game">
-  <div id="score">Cliquez sur Victor : 0 / 3</div>
-  <a href="https://shogunfever.github.io/Madame/eluard" id="nextTestLink">Prochain test</a>
-</div>
+  </div>
+
+<a href="https://shogunfever.github.io/Madame/eluard" id="nextTestLink">Prochain test</a>
 
 <script>
 const game = document.getElementById('game');
@@ -69,6 +102,7 @@ const nextTestLink = document.getElementById('nextTestLink');
 let score = 0;
 const characters = [];
 let gameInterval;
+let gameOver = false; // Nouvelle variable pour gérer l'état du jeu
 
 // URL de l'image de Victor Hugo
 const victorURL = "https://www.nofi.media/wp-content/uploads/2018/05/838_hugo-768x1082.jpg";
@@ -88,13 +122,16 @@ victor.alt = "Victor Hugo";
 game.appendChild(victor);
 characters.push(victor);
 
-// Le gestionnaire de clic pour Victor Hugo
-victor.addEventListener('click', () => {
+// Le gestionnaire de clic/touch pour Victor Hugo
+const handleVictorClick = () => {
+  if (gameOver) return; // Ne rien faire si le jeu est terminé
+
   if (score < 3) {
     score++;
     scoreDisplay.textContent = `Cliquez sur Victor : ${score} / 3`;
 
     if (score >= 3) {
+      gameOver = true; // Le jeu est terminé
       alert("Bravo ! Vous avez attrapé Victor Hugo 3 fois !");
       clearInterval(gameInterval); // Arrête le déplacement des personnages
       
@@ -107,9 +144,11 @@ victor.addEventListener('click', () => {
       nextTestLink.style.display = 'block'; // Affiche le lien "Prochain test"
     }
   }
-});
+};
+victor.addEventListener('click', handleVictorClick);
+victor.addEventListener('touchend', handleVictorClick); // Gère aussi les touch events
 
-// Crée les imposteurs et ajoute leurs gestionnaires de clic
+// Crée les imposteurs et ajoute leurs gestionnaires de clic/touch
 impostorImages.forEach(url => {
   const impostor = document.createElement('img');
   impostor.src = url;
@@ -118,19 +157,29 @@ impostorImages.forEach(url => {
   game.appendChild(impostor);
   characters.push(impostor);
 
-  impostor.addEventListener('click', () => {
+  const handleImpostorClick = () => {
+    if (gameOver) return; // Ne rien faire si le jeu est terminé
     alert("Enfin, tu ne sais pas reconnaître un poète lorsque tu en vois un ?!");
-  });
+  };
+  impostor.addEventListener('click', handleImpostorClick);
+  impostor.addEventListener('touchend', handleImpostorClick); // Gère aussi les touch events
 });
 
 // Fonction pour déplacer tous les personnages
 function moveCharacters() {
-  const gameWidth = window.innerWidth - 100;
-  const gameHeight = window.innerHeight - 150;
+  if (gameOver) return; // Ne pas déplacer si le jeu est terminé
+
+  const gameRect = game.getBoundingClientRect(); // Obtenir les dimensions du conteneur de jeu
+  const gameWidth = gameRect.width;
+  const gameHeight = gameRect.height;
 
   characters.forEach(char => {
-    const randomX = Math.random() * gameWidth;
-    const randomY = Math.random() * gameHeight;
+    // S'assurer que les personnages restent dans les limites du conteneur du jeu
+    const charWidth = char.offsetWidth;
+    const charHeight = char.offsetHeight;
+
+    const randomX = Math.random() * (gameWidth - charWidth);
+    const randomY = Math.random() * (gameHeight - charHeight);
     
     char.style.left = randomX + 'px';
     char.style.top = randomY + 'px';
@@ -138,11 +187,14 @@ function moveCharacters() {
 }
 
 // Démarre le déplacement des personnages
-// Augmenté de 10% : 650ms * (1 - 0.10) = 585ms
-gameInterval = setInterval(moveCharacters, 585);
+// Intervalle légèrement réduit pour une difficulté modérée sur mobile
+gameInterval = setInterval(moveCharacters, 700); // Passé de 585ms à 700ms pour une meilleure jouabilité sur mobile
 
 // Adapter le déplacement lors du redimensionnement de la fenêtre
 window.addEventListener('resize', moveCharacters);
+
+// Appel initial pour positionner les personnages au chargement
+moveCharacters();
 </script>
 
 </body>
